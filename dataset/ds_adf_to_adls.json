@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "source_1_AzureSQL",
+				"folderPath": "source_2_MySQL",
 				"fileSystem": "bronze"
 			},
 			"compressionCodec": "snappy"

@@ -228,7 +228,173 @@
 										]
 									},
 									{
-										"value": "MySQL_Src2"
+										"value": "MySQL_Src2",
+										"activities": [
+											{
+												"name": "MarkRunStart_2",
+												"type": "Script",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"linkedServiceName": {
+													"referenceName": "ls_azuresql_to_adf",
+													"type": "LinkedServiceReference"
+												},
+												"typeProperties": {
+													"scripts": [
+														{
+															"type": "Query",
+															"text": {
+																"value": "@concat(\n    'UPDATE az_medicalcontrol.WatermarkConfig\nSET LastRunStatus = ''RUNNING'' where TableID = ''', item().TableID, ''''\n)",
+																"type": "Expression"
+															}
+														}
+													],
+													"scriptBlockExecutionTimeout": "02:00:00"
+												}
+											},
+											{
+												"name": "Copy data_2",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "MarkRunStart_2",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "ds_AzureSql_switch_sources",
+														"type": "DatasetReference",
+														"parameters": {
+															"Source1_az_sql": {
+																"value": "@item().SourceSystem",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "ds_adf_to_adls",
+														"type": "DatasetReference"
+													}
+												]
+											},
+											{
+												"name": "MarkRunSuccess_2",
+												"type": "Script",
+												"dependsOn": [
+													{
+														"activity": "Copy data_2",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"linkedServiceName": {
+													"referenceName": "ls_azuresql_to_adf",
+													"type": "LinkedServiceReference"
+												},
+												"typeProperties": {
+													"scripts": [
+														{
+															"type": "Query",
+															"text": {
+																"value": "@concat(\n'UPDATE az_medicalcontrol.WatermarkConfig SET ',\n'LastRunStatus = ''SUCCEEDED'', ',\n'LastRunTime = ''',\n    formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'),\n''', ',\n'NextRunTime = ''',\n    formatDateTime(addHours(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'), int(item().FreqInterval)),'yyyy-MM-dd HH:mm:ss'),\n''' ',\n' WHERE TableID = ''', item().TableID, ''''\n)",
+																"type": "Expression"
+															}
+														}
+													],
+													"scriptBlockExecutionTimeout": "02:00:00"
+												}
+											},
+											{
+												"name": "MarkRunFailed_2",
+												"type": "Script",
+												"dependsOn": [
+													{
+														"activity": "Copy data_2",
+														"dependencyConditions": [
+															"Failed"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"linkedServiceName": {
+													"referenceName": "ls_azuresql_to_adf",
+													"type": "LinkedServiceReference"
+												},
+												"typeProperties": {
+													"scripts": [
+														{
+															"type": "Query",
+															"text": {
+																"value": "@concat(\n'UPDATE az_medicalcontrol.WatermarkConfig\nSET \n    LastRunStatus = ''FAILED'' where TableID = ''', item().TableID, ''''\n) ",
+																"type": "Expression"
+															}
+														}
+													],
+													"scriptBlockExecutionTimeout": "02:00:00"
+												}
+											}
+										]
 									}
 								],
 								"defaultActivities": [
