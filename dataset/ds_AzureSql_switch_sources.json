@@ -1,0 +1,17 @@
+{
+	"name": "ds_AzureSql_switch_sources",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_AzureSql_adf_switch_source",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Source1_az_sql": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
