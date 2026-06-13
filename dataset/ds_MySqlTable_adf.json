@@ -1,0 +1,24 @@
+{
+	"name": "ds_MySqlTable_adf",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_mysql_to_adf",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "MySqlTable",
+		"schema": [],
+		"typeProperties": {
+			"tableName": {
+				"value": "@dataset().TableName",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

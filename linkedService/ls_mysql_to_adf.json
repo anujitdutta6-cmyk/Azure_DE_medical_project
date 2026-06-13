@@ -1,0 +1,22 @@
+{
+	"name": "ls_mysql_to_adf",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "MySql",
+		"typeProperties": {
+			"server": "ANUJIT",
+			"port": 3306,
+			"database": "medical_azure_src2",
+			"username": "adf_user",
+			"sslMode": 1,
+			"useSystemTrustStore": 0,
+			"driverVersion": "v2",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI2YTU4NzAxNC03MTM3LTRiNmItYjVlNS1hYjI3MTliNjQyYjMiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "SHIRanujitONPrem",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

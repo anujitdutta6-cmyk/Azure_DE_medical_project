@@ -1,0 +1,15 @@
+{
+	"name": "adf-medical-project",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "3a8b8788-4a56-43f0-9158-0e88bc2c6a2e",
+		"tenantId": "3122aaea-199d-41bd-b70b-2818e3e609a2"
+	}
+}
