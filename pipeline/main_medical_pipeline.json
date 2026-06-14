@@ -307,7 +307,11 @@
 															"type": "AzureBlobFSWriteSettings"
 														},
 														"formatSettings": {
-															"type": "ParquetWriteSettings"
+															"type": "ParquetWriteSettings",
+															"maxRowsPerFile": {
+																"value": "@item().FileRowCount",
+																"type": "Expression"
+															}
 														}
 													},
 													"enableStaging": false,
@@ -332,7 +336,13 @@
 												"outputs": [
 													{
 														"referenceName": "ds_adf_to_adls",
-														"type": "DatasetReference"
+														"type": "DatasetReference",
+														"parameters": {
+															"FolderPath": {
+																"value": "@concat(item().SinkFolderPath,\n  '/year=',  formatDateTime(pipeline().TriggerTime,'yyyy'),\n  '/month=', formatDateTime(pipeline().TriggerTime,'MM'),\n  '/day=',   formatDateTime(pipeline().TriggerTime,'dd'))",
+																"type": "Expression"
+															}
+														}
 													}
 												]
 											},
