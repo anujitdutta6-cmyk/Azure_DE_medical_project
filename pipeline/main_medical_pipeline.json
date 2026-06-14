@@ -112,6 +112,7 @@
 												"typeProperties": {
 													"source": {
 														"type": "AzureSqlSource",
+														"sqlReaderQuery": "@concat('SELECT * FROM [', item().SourceSchema, '].[', item().SourceTable, '] ',\r\n'WHERE ', item().WatermarkColumn, ' > ''',\r\n   formatDateTime(coalesce(item().LastRunTime,'1900-01-01'),'yyyy-MM-dd HH:mm:ss'), ''' ',\r\n'AND ', item().WatermarkColumn, ' <= ''',\r\n   formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'), '''')",
 														"queryTimeout": "02:00:00",
 														"partitionOption": "None"
 													},
@@ -121,7 +122,11 @@
 															"type": "AzureBlobFSWriteSettings"
 														},
 														"formatSettings": {
-															"type": "ParquetWriteSettings"
+															"type": "ParquetWriteSettings",
+															"maxRowsPerFile": {
+																"value": "@item().FileRowCount",
+																"type": "Expression"
+															}
 														}
 													},
 													"enableStaging": false,
@@ -281,6 +286,7 @@
 												"typeProperties": {
 													"source": {
 														"type": "AzureSqlSource",
+														"sqlReaderQuery": "@concat('SELECT * FROM `', item().SourceTable, '` ',\r\n'WHERE `', item().WatermarkColumn, '` > ''',\r\n   formatDateTime(coalesce(item().LastRunTime,'1900-01-01'),'yyyy-MM-dd HH:mm:ss'), ''' ',\r\n'AND `', item().WatermarkColumn, '` <= ''',\r\n   formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'), '''')",
 														"queryTimeout": "02:00:00",
 														"partitionOption": "None"
 													},
