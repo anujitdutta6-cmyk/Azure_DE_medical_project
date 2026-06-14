@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT TableID, SourceSystem, SourceSchema, SourceTable,\r\n       WatermarkColumn, LastWatermarkValue, SinkFolderPath, FileRowCount,\r\n       LastRunTime, NextRunTime, FreqInterval, LastRunStatus, ScheduleFrequency\r\nFROM az_medicalcontrol.WatermarkConfig\r\nWHERE IsActive = 1;",
+						"sqlReaderQuery": "SELECT TableID, SourceSystem, SourceSchema, SourceTable,\r\n       WatermarkColumn, LastWatermarkValue, SinkFolderPath, FileRowCount,\r\n       LastRunTime, NextRunTime, FreqInterval, LastRunStatus, ScheduleFrequency\r\nFROM az_medicalcontrol.WatermarkConfig\r\nWHERE IsActive = 1\r\nAND   LastRunStatus != 'RUNNING'\r\nAND   (NextRunTime <= GETDATE() OR NextRunTime IS NULL)",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -112,7 +112,10 @@
 												"typeProperties": {
 													"source": {
 														"type": "AzureSqlSource",
-														"sqlReaderQuery": "@concat('SELECT * FROM [', item().SourceSchema, '].[', item().SourceTable, '] ',\r\n'WHERE ', item().WatermarkColumn, ' > ''',\r\n   formatDateTime(coalesce(item().LastRunTime,'1900-01-01'),'yyyy-MM-dd HH:mm:ss'), ''' ',\r\n'AND ', item().WatermarkColumn, ' <= ''',\r\n   formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'), '''')",
+														"sqlReaderQuery": {
+															"value": "@concat('SELECT * FROM [', item().SourceSchema, '].[', item().SourceTable, '] ',\n'WHERE ', item().WatermarkColumn, ' > ''',\n   formatDateTime(coalesce(item().LastRunTime,'1900-01-01'),'yyyy-MM-dd HH:mm:ss'), ''' ',\n'AND ', item().WatermarkColumn, ' <= ''',\n   formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'), '''')",
+															"type": "Expression"
+														},
 														"queryTimeout": "02:00:00",
 														"partitionOption": "None"
 													},
@@ -144,8 +147,12 @@
 														"referenceName": "ds_AzureSql_switch_sources",
 														"type": "DatasetReference",
 														"parameters": {
-															"Source1_az_sql": {
-																"value": "@item().SourceSystem",
+															"SchemaName": {
+																"value": "item().SourceSchema",
+																"type": "Expression"
+															},
+															"TableName": {
+																"value": "item().SourceTable",
 																"type": "Expression"
 															}
 														}
@@ -154,7 +161,13 @@
 												"outputs": [
 													{
 														"referenceName": "ds_adf_to_adls",
-														"type": "DatasetReference"
+														"type": "DatasetReference",
+														"parameters": {
+															"FolderPath": {
+																"value": "@concat(item().SinkFolderPath,\n  '/year=',  formatDateTime(pipeline().TriggerTime,'yyyy'),\n  '/month=', formatDateTime(pipeline().TriggerTime,'MM'),\n  '/day=',   formatDateTime(pipeline().TriggerTime,'dd'))",
+																"type": "Expression"
+															}
+														}
 													}
 												]
 											},
@@ -285,10 +298,8 @@
 												"userProperties": [],
 												"typeProperties": {
 													"source": {
-														"type": "AzureSqlSource",
-														"sqlReaderQuery": "@concat('SELECT * FROM `', item().SourceTable, '` ',\r\n'WHERE `', item().WatermarkColumn, '` > ''',\r\n   formatDateTime(coalesce(item().LastRunTime,'1900-01-01'),'yyyy-MM-dd HH:mm:ss'), ''' ',\r\n'AND `', item().WatermarkColumn, '` <= ''',\r\n   formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'), '''')",
-														"queryTimeout": "02:00:00",
-														"partitionOption": "None"
+														"type": "MySqlSource",
+														"query": "@concat('SELECT * FROM `', item().SourceTable, '` ',\n'WHERE `', item().WatermarkColumn, '` > ''',\n   formatDateTime(coalesce(item().LastRunTime,'1900-01-01'),'yyyy-MM-dd HH:mm:ss'), ''' ',\n'AND `', item().WatermarkColumn, '` <= ''',\n   formatDateTime(convertTimeZone(pipeline().TriggerTime,'UTC','India Standard Time'),'yyyy-MM-dd HH:mm:ss'), '''')"
 													},
 													"sink": {
 														"type": "ParquetSink",
@@ -311,13 +322,10 @@
 												},
 												"inputs": [
 													{
-														"referenceName": "ds_AzureSql_switch_sources",
+														"referenceName": "ds_MySqlTable_adf",
 														"type": "DatasetReference",
 														"parameters": {
-															"Source1_az_sql": {
-																"value": "@item().SourceSystem",
-																"type": "Expression"
-															}
+															"TableName": "@item().SourceTable"
 														}
 													}
 												],

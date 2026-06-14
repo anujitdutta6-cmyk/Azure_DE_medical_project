@@ -2,7 +2,7 @@
 	"name": "ds_AzureSqlTable_adf",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_AzureSql_adf_switch_source",
+			"referenceName": "ls_azuresql_to_adf",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
